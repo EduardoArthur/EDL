@@ -219,7 +219,144 @@ Eh um número inteiro
 (Agencia:12345, Conta: 12345, Saldo: 1000.0)
 ~~~
 
-# Funcionalidade Lazy Evaluation
+# Funcionalidade For Comprehension
+
+For Comprehensions em Scala nada mais é que uma sintaxe resumida para criação de loops.
+
+Ela possui a seguinte forma:
+	for (enumerators) yield corpo,
+onde enumerators refere a uma lista separada de enumerators. Um enumerator pode ser tanto um generator que introduz novas variaveis, como pode ser um filtro. 
+A comprehension avalia o corpo para cada binding gerada pelos enumerators e retorna a sequencia com esses valores.
+
+Um exemplo simples
+~~~
+for(i <- 1 to 10) yield i*i
+~~~
+
+### Output
+~~~
+Vector(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+~~~
+
+Neste exemplo o valor do i vai variar de 1 até 10 e o programa vai gerar um vetor de inteiros e vai mapear para cada valor com o resultado de i*i
+
+um outro exemplo
+
+~~~
+val comb = for {
+          x <- 1 to 2
+          y <- 'a' to 'd'
+        } yield (x,y)
+        
+        println(comb)
+~~~
+
+O resultado será uma combinação de x e y
+### Output
+~~~
+Vector((1,a), (1,b), (1,c), (1,d), (2,a), (2,b), (2,c), (2,d))
+~~~
+
+Times de baseball
+~~~
+object MyClass {
+    
+    case class Player(name: String, position: String)
+        
+    def main(args: Array[String]) {
+        
+        val heat = List(
+            Player("Mario Chamlers", "PG"),
+            Player("Dwayne Wade", "SG"),
+            Player("LeBron Jame", "SF"),
+            Player("Udonis Haslem", "PF"),
+            Player("Chris Bosh", "C")
+        )
+        
+        val guards = for (player <- heat if player.position endsWith "G") yield player.name
+            
+        val forwards = heat
+            .withFilter(_.position endsWith "F")
+            .map(_.name)
+        
+        val centre = heat
+            .withFilter(player => player.position == "C")
+            .map(player => player.name)
+            .head
+        
+        val scoreSheet = for (Player(name, _) <- heat) yield (name, 0)
+    
+        def points = util.Random.nextInt(30)
+        
+        val vsThunder = scoreSheet map { case (p, _) => (p, points) }
+        
+        val vsCeltics = scoreSheet map { s => (s._1, points) }
+        
+        val vsLakers = scoreSheet map { sheet => val (p, _) = sheet; (p, points) }
+        
+        val totalScores = (vsThunder ++ vsCeltics ++ vsLakers)
+                            .groupBy(_._1)
+                            .mapValues(_.map(_._2).sum)
+                            .toList
+                            .sortBy(_._2) // sort by ASC score
+                            .map { case (p, s) => p + " [" + s + "]" }
+                            .mkString("\n")
+            
+        println(totalScores)
+   }
+}
+~~~
+
+### Output
+~~~
+LeBron Jame [21]
+Mario Chamlers [34]
+Chris Bosh [40]
+Udonis Haslem [41]
+Dwayne Wade [65]
+~~~
+
+
+tendo o seguinte problema: é preciso construir um carro composto de 3 partes, motor, roda e corpo.
+
+
+~~~
+private def body(): Option[Body] = Some(new Body())
+
+private def wheels(): Option[Wheels] = Some(new Wheels())
+
+private def engine(): Option[Engine] = Some(new Engine())
+~~~
+
+em Scala podemos facilmente resolver este problema usando a funcionalidade for comprehensions
+
+~~~
+var car = for {
+ engine <- engine()
+ wheels <- wheels()
+ body <- body()
+} yield Car(body, engine, wheels)
+~~~
+
+O for comprehensions nada mais é que uma mistura de sintaxes feito para deixar o codigo mais elegante e interpretando varias funcionalidades como foreach, map, filter, etc...
+e o compilador traduz de acordo com o contexto.
+neste caso o codigo vai ser traduzido pelo compilador para:
+
+~~~
+engine().flatMap(engine => wheels().flatmap(wheels => body().map(engine, wheels,body)))
+~~~
+
+nesse exemplo vemos que as for comprehensions começam a ser uteis para a regibilidade e legibilidade do codigo especialmente quando começamos a aninhar varios map
+
+supondo que não existisse essa função em java por exemplo e tivessemos que utilizar apenas o map, flatmap para esta situação teriamos algo parecido com isso
+
+~~~
+final Option<Car> car = body().flatMap(b -> engine().flatMap(e -> wheels().map(w -> new Car(b, e, w))));
+~~~
+
+# Desconsiderar
+
+## Funcionalidade Lazy Evaluation
 
 Lazy evaluation é uma técnica de avaliação de expressões que consiste em não atribuir um valor ou calcular uma expressão até que ela seja necessária, por isso o apelido "preguiçosa" ela não fará nada até ser chamada.
 
@@ -267,7 +404,7 @@ Como se pode perceber pelo exemplo, no tradicional método estático, a função
 Mas qual a vantagem?
 #### Otimização do programa
 Como a variável só será executada no momento de sua chamada é possível que ela nunca seja usada, evitando desperdício de memória.
-Com essa opção é possível até mesmo construir estruturas de dados "infinitas"
+Com essa opção é possível até mesmo construir estruturas de dados infinitas.
 
 #### Lazy Lists
 
@@ -317,3 +454,12 @@ Como se percebe nesse exemplo a lazy list quando declarada não é computada, at
 * https://scalafiddle.io/
 * https://www.devmedia.com.br/conheca-a-linguagem-scala/32850
 * https://scastie.scala-lang.org/
+* http://cocic.cm.utfpr.edu.br/progconcorrente/doku.php?id=scala
+* https://docs.scala-lang.org/tutorials/FAQ/yield.html
+* https://docs.scala-lang.org/tour/for-comprehensions.html
+* https://www.youtube.com/watch?v=r86DvO_wsZ0
+* https://www.rallyhealth.com/coding/comprehending-for-comprehensions
+* https://eddmann.com/posts/using-for-comprehensions-in-scala/
+
+
+
