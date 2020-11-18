@@ -460,6 +460,7 @@ Como se percebe nesse exemplo a lazy list quando declarada não é computada, at
 * https://www.youtube.com/watch?v=r86DvO_wsZ0
 * https://www.rallyhealth.com/coding/comprehending-for-comprehensions
 * https://eddmann.com/posts/using-for-comprehensions-in-scala/
+* https://blog.softwaremill.com/code-for-comprehension-3cfb60236a83
 
 
 
